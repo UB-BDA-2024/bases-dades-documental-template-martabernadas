@@ -31,6 +31,8 @@ def create_sensor(db: Session, sensor: schemas.SensorCreate, mongoDB: MongoDBCli
         "id": db_sensor.id,
         "name": sensor.name,
         "type": sensor.type,
+        "longitude":sensor.longitude,
+        "latitude":sensor.latitude,
         "mac_address": sensor.mac_address,
         "manufacturer": sensor.manufacturer,
         "model": sensor.model,
@@ -44,7 +46,7 @@ def create_sensor(db: Session, sensor: schemas.SensorCreate, mongoDB: MongoDBCli
 
     # Crea un índex per la ubicació
     collection.create_index([("location","2dsphere")])
-    
+
     #Afegeix el document a mongoDB
     mongoDB.insertDocument(document)
     return db_sensor
@@ -109,15 +111,14 @@ def get_sensors_near(mongodb: MongoDBClient, latitude: float, longitude: float,r
     
     #Recuperem els documents que compleixin la condició 
     sensors_near = list(mongodb.getDocuments(query))
-
+    
     #Per cada document obtigut actualitzem les seves dades
     for sensor in sensors_near:
         #Obtenim les dades de postgreSQL
-        db_sensor=get_sensor_by_name(db=db,name=sensor['name'])
+        db_sensor=get_sensor(db=db,sensor_id=sensor['id'])
         #Obtenim les dades de redis
         db_data=get_data(redis=redis,sensor_id=db_sensor.id,sensor_name=db_sensor.name)
         #Les afegim al document
-        sensor['id']=db_sensor.id
         sensor['velocity']=db_data['velocity']
         sensor['temperature']=db_data['temperature']
         sensor['humidity']=db_data['humidity']
