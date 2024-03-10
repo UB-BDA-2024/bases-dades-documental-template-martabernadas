@@ -24,5 +24,16 @@ class MongoDBClient:
     
     def clearDb(self,database):
         self.client.drop_database(database)
+        
+    # Funció per inserir un document a la col·lecció 
+    def insertDocument(self,document):
+        return self.collection.insert_one(document)
+    
+    # Funció per esborrar un document de la col·lecció
+    def deleteDocument(self,query):
+        self.collection.delete_one(query)
 
+    # Funció per obtenir els documents de la col·lecció 
+    def getDocuments(self,query):
+        return self.collection.find(query, {'_id': 0})
 
